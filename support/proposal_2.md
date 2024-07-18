@@ -58,7 +58,7 @@ English Output:
 <EN><I>< love>< N><L><P><.></EN>
 ```
 
-Chinese Output: E6 88 91 E5 96 9C E6 AC A2 E8 87 AA E7 84 B6 E8 AF AD E8 A8 80 E5 A4 84 E7 90 86
+Chinese Output:
 ```xml
 <CH><b\xe6><\x88><\x91><b\xe5><\x96\x9c><b\xe6><\xac><\xa2><b\xe8><\x87\xaa><b\xe7><\x84><\xb6><b\xe8\xaf><\xad><b\xe8><\xa8><\x80><b\xe5\xa4><\x84><b\xe7><\x90><\x86><.></CH>
 ```
