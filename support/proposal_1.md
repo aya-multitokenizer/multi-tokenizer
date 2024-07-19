@@ -18,9 +18,9 @@ graph LR
     G --> H
 ```
 
-Assume, the input text is `I love NLP.` = `我喜欢自然语言处理.` = `Me encanta NLP.` 
+Assume, the input text is `I love NLP.` = `我喜欢自然语言处理.` = `Me encanta NLP.`
 
-The system will detect the language of each segment and apply the appropriate tokenizer for that language. 
+The system will detect the language of each segment and apply the appropriate tokenizer for that language.
 
 English Output from Universal Tokenizer:
 ```xml

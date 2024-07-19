@@ -1,0 +1,28 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+-   repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+    -   id: black
+-   repo: https://github.com/PyCQA/flake8
+    rev: 7.1.0
+    hooks:
+    -   id: flake8
+        exclude: 'venv|.conda|.git|.vscode|__pycache__|tests|examples|build|dist|.*.egg-info|.*.egg|temp*'
+        additional_dependencies: [pep8-naming, flake8_import_order, flake8_docstrings, flake8_comprehensions, flake8_bugbear, flake8_annotations, flake8_simplify]
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.1
+    hooks:
+    -   id: mypy
+        exclude: 'venv|.conda|.git|.vscode|__pycache__|tests|examples|vendor|build|dist|.*.egg-info|.*.egg|temp*'
+        args:
+            - --follow-imports=silent
+            - --ignore-missing-imports
