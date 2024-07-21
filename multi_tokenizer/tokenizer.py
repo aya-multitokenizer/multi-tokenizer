@@ -5,6 +5,7 @@ import pickle
 from multi_tokenizer.language_detect import LanguageDetector
 from multi_tokenizer.pretrained import (
     LanguageSpecificTokenizer,
+    PretrainedTokenizers,
     get_tokenizer_by_language,
 )
 
@@ -14,11 +15,20 @@ from tokenizers import Encoding
 class MultiTokenizer:
     """MultiTokenizer Class."""
 
-    def __init__(self, tokenizers: list[LanguageSpecificTokenizer]) -> None:
+    def __init__(
+        self, tokenizers: list[LanguageSpecificTokenizer | PretrainedTokenizers]
+    ) -> None:
         """Initialize MultiTokenizer."""
-        self.tokenizers = tokenizers
+        self.tokenizers = [
+            (
+                tokenizer
+                if isinstance(tokenizer, LanguageSpecificTokenizer)
+                else tokenizer.value
+            )
+            for tokenizer in tokenizers
+        ]
         self.language_detector = LanguageDetector(
-            [tokenizer.language for tokenizer in tokenizers]
+            [tokenizer.language for tokenizer in self.tokenizers]
         )
 
     def pre_tokenize(self, text: str) -> list[tuple[str, tuple[int, int]]]:
@@ -34,8 +44,9 @@ class MultiTokenizer:
             output = (
                 [(tokenizer.language_prefix_token, (-1, 0))]
                 + output
-                + [(tokenizer.language_suffix_token, (len(text) - 1, len(text)))]
+                + [(tokenizer.language_suffix_token, (len(detected_text) - 2, len(detected_text) - 1))]
             )
+            # Offsetting the start and end indices of the tokens to match the original text
             output = [
                 (
                     token,
@@ -74,3 +85,10 @@ class MultiTokenizer:
         for tokenizer in self.tokenizers:
             vocab[tokenizer.language.name] = tokenizer.get_vocab()
         return vocab
+
+    def get_vocab_size(self) -> int:
+        """Get Vocabulary Size."""
+        vocab = self.get_vocab()
+        return sum(
+            len(vocab[language]) for language in vocab
+        )  # TODO: This is probably wrong
