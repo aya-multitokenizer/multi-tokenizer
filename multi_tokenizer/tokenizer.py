@@ -44,7 +44,12 @@ class MultiTokenizer:
             output = (
                 [(tokenizer.language_prefix_token, (-1, 0))]
                 + output
-                + [(tokenizer.language_suffix_token, (len(detected_text) - 2, len(detected_text) - 1))]
+                + [
+                    (
+                        tokenizer.language_suffix_token,
+                        (len(detected_text) - 2, len(detected_text) - 1),
+                    )
+                ]
             )
             # Offsetting the start and end indices of the tokens to match the original text
             output = [
