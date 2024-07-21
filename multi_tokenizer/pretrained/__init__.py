@@ -4,13 +4,7 @@ import os
 from enum import Enum
 from typing import Callable
 
-from multi_tokenizer.language_detect import (
-    CantoneseDetector,
-    EnglishDetector,
-    HindiDetector,
-    LanguageDetector,
-    SpanishDetector,
-)
+from lingua import Language
 
 from tokenizers import Tokenizer
 
@@ -22,10 +16,16 @@ class LanguageSpecificTokenizer:
     """Language Specific Tokenizer."""
 
     def __init__(
-        self, tokenizer_path: str, language_detector: LanguageDetector | None = None
+        self,
+        tokenizer_path: str,
+        language: Language,
+        language_prefix: str,
+        language_suffix: str,
     ) -> None:
         """Initialize Language Specific Tokenizer."""
-        self.language_detector = language_detector
+        self.language = language
+        self.language_prefix_token = language_prefix
+        self.language_suffix_token = language_suffix
         self.tokenizer = Tokenizer.from_file(tokenizer_path)
 
     def __getattr__(self, name: str) -> Callable:
@@ -37,17 +37,34 @@ class PretrainedTokenizers(Enum):
     """Pretrained Tokenizers for Specific Languages."""
 
     ENGLISH = LanguageSpecificTokenizer(
-        os.path.join(file_dir, "english_tokenizer.json"), EnglishDetector()
+        os.path.join(file_dir, "english_tokenizer.json"),
+        Language.ENGLISH,
+        "<EN>",
+        "</EN>",
     )
     SPANISH = LanguageSpecificTokenizer(
-        os.path.join(file_dir, "spanish_tokenizer.json"), SpanishDetector()
+        os.path.join(file_dir, "spanish_tokenizer.json"),
+        Language.SPANISH,
+        "<ES>",
+        "</ES>",
     )
-    CANTONESE = LanguageSpecificTokenizer(
-        os.path.join(file_dir, "cantonese_tokenizer.json"), CantoneseDetector()
+    CHINESE = LanguageSpecificTokenizer(
+        os.path.join(file_dir, "chinese_tokenizer.json"),
+        Language.CHINESE,
+        "<ZH>",
+        "</ZH>",
     )
     HINDI = LanguageSpecificTokenizer(
-        os.path.join(file_dir, "hindi_tokenizer.json"), HindiDetector()
+        os.path.join(file_dir, "hindi_tokenizer.json"), Language.HINDI, "<HI>", "</HI>"
     )
+
+
+def get_tokenizer_by_language(language: Language) -> LanguageSpecificTokenizer:
+    """Get Tokenizer for Language."""
+    for tokenizer in PretrainedTokenizers:
+        if tokenizer.value.language == language:
+            return tokenizer.value
+    raise ValueError(f"Tokenizer for language {language} not found.")
 
 
 __all__ = ["PretrainedTokenizers"]

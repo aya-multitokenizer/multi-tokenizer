@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 tokenizers = "^0.19.1"
+lingua-language-detector = "^2.0.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
