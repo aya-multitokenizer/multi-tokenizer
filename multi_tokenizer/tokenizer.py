@@ -16,7 +16,10 @@ class MultiTokenizer:
     """MultiTokenizer Class."""
 
     def __init__(
-        self, tokenizers: list[LanguageSpecificTokenizer | PretrainedTokenizers]
+        self,
+        tokenizers: list[LanguageSpecificTokenizer | PretrainedTokenizers],
+        split_text: bool = False,
+        sep: str = " ",
     ) -> None:
         """Initialize MultiTokenizer."""
         self.tokenizers = [
@@ -30,11 +33,17 @@ class MultiTokenizer:
         self.language_detector = LanguageDetector(
             [tokenizer.language for tokenizer in self.tokenizers]
         )
+        self.split_text = split_text
+        self.sep = sep
 
     def pre_tokenize(self, text: str) -> list[tuple[str, tuple[int, int]]]:
         """Pre Tokenize Text."""
         pre_tokenized_text = []
-        language_detections = self.language_detector.detect(text)
+        language_detections = (
+            self.language_detector.detect(text)
+            if not self.split_text
+            else self.language_detector.split_n_detect(text, self.sep)
+        )
         for detection in language_detections:
             detected_text = text[detection.start_index : detection.end_index]
             tokenizer = get_tokenizer_by_language(detection.language)
