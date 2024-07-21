@@ -56,7 +56,6 @@ class LanguageDetector:
             return merged_results
 
         texts = text.split(sep)
-        print(texts)
         results = self.batch_detect(texts)
         merged_results = merge_results(results)
         return merged_results

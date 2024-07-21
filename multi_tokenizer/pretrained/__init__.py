@@ -19,8 +19,8 @@ class LanguageSpecificTokenizer:
         self,
         tokenizer_path: str,
         language: Language,
-        language_prefix: str,
-        language_suffix: str,
+        language_prefix: tuple[str, int],
+        language_suffix: tuple[str, int],
     ) -> None:
         """Initialize Language Specific Tokenizer."""
         self.language = language
@@ -39,23 +39,26 @@ class PretrainedTokenizers(Enum):
     ENGLISH = LanguageSpecificTokenizer(
         os.path.join(file_dir, "english_tokenizer.json"),
         Language.ENGLISH,
-        "<EN>",
-        "</EN>",
+        ("<EN>", 3),
+        ("</EN>", 4),
     )
     SPANISH = LanguageSpecificTokenizer(
         os.path.join(file_dir, "spanish_tokenizer.json"),
         Language.SPANISH,
-        "<ES>",
-        "</ES>",
+        ("<ES>", 5),
+        ("</ES>", 6),
     )
     CHINESE = LanguageSpecificTokenizer(
         os.path.join(file_dir, "chinese_tokenizer.json"),
         Language.CHINESE,
-        "<ZH>",
-        "</ZH>",
+        ("<ZH>", 7),
+        ("</ZH>", 8),
     )
     HINDI = LanguageSpecificTokenizer(
-        os.path.join(file_dir, "hindi_tokenizer.json"), Language.HINDI, "<HI>", "</HI>"
+        os.path.join(file_dir, "hindi_tokenizer.json"),
+        Language.HINDI,
+        ("<HI>", 9),
+        ("</HI>", 10),
     )
 
 
