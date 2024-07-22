@@ -39,10 +39,10 @@ tokenizer = MultiTokenizer(lang_tokenizers, split_text=True)
 sentence = "Translate this hindi sentence to english - बिल्ली बहुत प्यारी है."
 
 # Pretokenize the text
-pretokenized_text = tokenizer.pretokenize(sentence) # [('<EN>', (0, 1)), ('Translate', (1, 10)), ('Ġthis', (10, 15)), ('Ġhindi', (15, 21)), ...]
+pretokenized_text = tokenizer.pre_tokenize(sentence) # [('<EN>', (0, 1)), ('Translate', (1, 10)), ('Ġthis', (10, 15)), ('Ġhindi', (15, 21)), ...]
 
-# Tokenize the text
-ids, tokens = tokenizer.encode(pretokenized_text) # [3, 7235, 6614, 86, 755, 775, 10763, 83, 19412, 276, ...], ['<EN>', 'Tr', 'ans', 'l', 'ate', 'Ġthis', 'Ġhind', ...]
+# Encode the text
+ids, tokens = tokenizer.encode(sentence) # [3, 7235, 6614, 86, 755, 775, 10763, 83, 19412, 276, ...], ['<EN>', 'Tr', 'ans', 'l', 'ate', 'Ġthis', 'Ġhind', ...]
 
 # Decode the tokens
 decoded_text = tokenizer.decode(ids) # Translate this hindi sentence to english - बिल्ली बहुत प्यारी है.
