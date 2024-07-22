@@ -14,13 +14,11 @@ Multi-Tokenizer is a Python package that provides tokenization of multilingual t
 pip install multi-tokenizer
 ```
 
-### Using Poetry
+### from Source
 ```bash
 git clone https://github.com/chandralegend/multi-tokenizer.git
 cd multi-tokenizer
 pip install .
-# or if poetry is installed
-poetry install
 ```
 
 ## Usage
