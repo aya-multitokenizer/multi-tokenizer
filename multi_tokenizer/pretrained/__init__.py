@@ -2,7 +2,7 @@
 
 import os
 from enum import Enum
-from typing import Callable
+from typing import Any
 
 from lingua import Language
 
@@ -28,9 +28,26 @@ class LanguageSpecificTokenizer:
         self.language_suffix_token = language_suffix
         self.tokenizer = Tokenizer.from_file(tokenizer_path)
 
-    def __getattr__(self, name: str) -> Callable:
-        """Get Attribute."""
-        return getattr(self.tokenizer, name)
+    @property
+    def pre_tokenizer(self) -> Any:
+        """Get Pre Tokenizer."""
+        return self.tokenizer.pre_tokenizer
+
+    def encode(self, text: str) -> list[int]:
+        """Get Encoder."""
+        return self.tokenizer.encode(text).ids
+
+    def tokenize(self, text: str) -> list[str]:
+        """Tokenize Text."""
+        return self.tokenizer.encode(text).tokens
+
+    def decode(self, ids: list[int]) -> str:
+        """Decode Text."""
+        return self.tokenizer.decode(ids)
+
+    def get_vocab(self) -> dict[str, int]:
+        """Get Vocab."""
+        return self.tokenizer.get_vocab()
 
 
 class PretrainedTokenizers(Enum):

@@ -1,7 +1,6 @@
 """Multi Tokenizer Module."""
 
 import pickle
-from typing import Any
 
 from lingua import Language
 
@@ -15,7 +14,7 @@ class MultiTokenizer:
     def __init__(
         self,
         tokenizers: list[LanguageSpecificTokenizer | PretrainedTokenizers],
-        fallback_tokenizer: Any = None,
+        fallback_tokenizer: LanguageSpecificTokenizer | PretrainedTokenizers,
         split_text: bool = False,
         sep: str = " ",
     ) -> None:
@@ -29,7 +28,9 @@ class MultiTokenizer:
             for tokenizer in tokenizers
         ]
         self.fallback_tokenizer = (
-            self.tokenizers[0] if fallback_tokenizer is None else fallback_tokenizer
+            fallback_tokenizer
+            if isinstance(fallback_tokenizer, LanguageSpecificTokenizer)
+            else fallback_tokenizer.value
         )
         self.language_prefix_token_ids = [
             tokenizer.language_prefix_token[1] for tokenizer in self.tokenizers
@@ -62,7 +63,7 @@ class MultiTokenizer:
             last_end_index = detection.end_index
             tokenizer = self.get_tokenizer_by_language(detection.language)
             output: list[tuple[str, tuple[int, int]]] = (
-                tokenizer.tokenizer.pre_tokenizer.pre_tokenize_str(detected_text)
+                tokenizer.pre_tokenizer.pre_tokenize_str(detected_text)
             )
             output = (
                 [(tokenizer.language_prefix_token[0], (-1, 0))]
@@ -116,9 +117,38 @@ class MultiTokenizer:
                 return tokenizer
         raise ValueError(f"Tokenizer for prefix ID {prefix_id} not found.")
 
-    def encode(self, text: str) -> tuple[list[int], list[str]]:
+    def encode(self, text: str) -> list[int]:
         """Encode Text."""
         ids = []
+        language_detections = (
+            self.language_detector.detect(text)
+            if not self.split_text
+            else self.language_detector.split_n_detect(text, self.sep)
+        )
+        last_end_index = 0
+        for detection in language_detections:
+            if detection.start_index != last_end_index:
+                token_ids = self.fallback_tokenizer.encode(
+                    text[last_end_index : detection.start_index]
+                )
+                ids.extend(token_ids)
+            detected_text = text[detection.start_index : detection.end_index]
+            tokenizer = self.get_tokenizer_by_language(detection.language)
+            detected_text = (
+                tokenizer.language_prefix_token[0]
+                + detected_text
+                + tokenizer.language_suffix_token[0]
+            )
+            token_ids = tokenizer.encode(detected_text)
+            ids.extend(token_ids)
+            last_end_index = detection.end_index
+        if last_end_index < len(text):
+            token_ids = self.fallback_tokenizer.encode(text[last_end_index:])
+            ids.extend(token_ids)
+        return ids
+
+    def tokenize(self, text: str) -> list[str]:
+        """Tokenize Text."""
         tokens = []
         language_detections = (
             self.language_detector.detect(text)
@@ -128,11 +158,11 @@ class MultiTokenizer:
         last_end_index = 0
         for detection in language_detections:
             if detection.start_index != last_end_index:
-                encoding = self.fallback_tokenizer.encode(
-                    text[last_end_index : detection.start_index]
+                tokens.extend(
+                    self.fallback_tokenizer.tokenize(
+                        text[last_end_index : detection.start_index]
+                    )
                 )
-                ids.extend(encoding.ids)
-                tokens.extend(encoding.tokens)
             detected_text = text[detection.start_index : detection.end_index]
             tokenizer = self.get_tokenizer_by_language(detection.language)
             detected_text = (
@@ -140,15 +170,11 @@ class MultiTokenizer:
                 + detected_text
                 + tokenizer.language_suffix_token[0]
             )
-            encoding = tokenizer.tokenizer.encode(detected_text)
-            ids.extend(encoding.ids)
-            tokens.extend(encoding.tokens)
+            tokens.extend(tokenizer.tokenize(detected_text))
             last_end_index = detection.end_index
         if last_end_index < len(text):
-            encoding = self.fallback_tokenizer.encode(text[last_end_index:])
-            ids.extend(encoding.ids)
-            tokens.extend(encoding.tokens)
-        return ids, tokens
+            tokens.extend(self.fallback_tokenizer.tokenize(text[last_end_index:]))
+        return tokens
 
     def decode(self, token_ids: list[int]) -> str:
         """Decode Encoding."""
