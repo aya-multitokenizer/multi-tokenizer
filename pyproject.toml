@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "multi-tokenizer"
-version = "0.1.1"
+version = "0.1.2-dev"
 description = ""
 authors = ["chandralegend <irugalbandarachandra@gmail.com>"]
 license = "MIT"

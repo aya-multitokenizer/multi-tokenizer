@@ -7,6 +7,50 @@ Tokenization of Multilingual Texts using Language-Specific Tokenizers
 
 Multi-Tokenizer is a Python package that provides tokenization of multilingual texts using language-specific tokenizers. The package is designed to be used in a variety of applications, including natural language processing, machine learning, and data analysis. Behind the scenes, the package uses `lingua` library to detect the language of the text segments, the `tokenizers` library to create language-specific tokenizers, and then tokenizes the text segments using the appropriate tokenizer. Multi-tokenizer introduces additional special tokens to handle the language-specific tokenization, which can be used to reconstruct the original text segments after tokenization and allows the models to differentiate between the languages in the text segments.
 
+## Installation
+
+### Using pip
+```bash
+pip install multi-tokenizer
+```
+
+### Using Poetry
+```bash
+git clone https://github.com/chandralegend/multi-tokenizer.git
+cd multi-tokenizer
+pip install .
+# or if poetry is installed
+poetry install
+```
+
+## Usage
+
+```python
+from multi_tokenizer import MultiTokenizer, PretrainedTokenizers
+
+# specify the language tokenizers to be used
+lang_tokenizers = [
+    PretrainedTokenizers.ENGLISH,
+    PretrainedTokenizers.CHINESE,
+    PretrainedTokenizers.HINDI,
+]
+
+# create a multi-tokenizer object (split_text=True to split the text into segments, for better language detection)
+tokenizer = MultiTokenizer(lang_tokenizers, split_text=True)
+
+sentence = "Translate this hindi sentence to english - बिल्ली बहुत प्यारी है."
+
+# Pretokenize the text
+pretokenized_text = tokenizer.pretokenize(sentence) # [('<EN>', (0, 1)), ('Translate', (1, 10)), ('Ġthis', (10, 15)), ('Ġhindi', (15, 21)), ...]
+
+# Tokenize the text
+ids, tokens = tokenizer.encode(pretokenized_text) # [3, 7235, 6614, 86, 755, 775, 10763, 83, 19412, 276, ...], ['<EN>', 'Tr', 'ans', 'l', 'ate', 'Ġthis', 'Ġhind', ...]
+
+# Decode the tokens
+decoded_text = tokenizer.decode(ids) # Translate this hindi sentence to english - बिल्ली बहुत प्यारी है.
+```
+
+
 ## Development Setup
 
 ### Prerequisites
