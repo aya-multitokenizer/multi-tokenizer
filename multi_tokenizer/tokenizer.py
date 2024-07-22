@@ -1,6 +1,7 @@
 """Multi Tokenizer Module."""
 
 import pickle
+from typing import Any
 
 from lingua import Language
 
@@ -14,6 +15,7 @@ class MultiTokenizer:
     def __init__(
         self,
         tokenizers: list[LanguageSpecificTokenizer | PretrainedTokenizers],
+        fallback_tokenizer: Any = None,
         split_text: bool = False,
         sep: str = " ",
     ) -> None:
@@ -26,6 +28,9 @@ class MultiTokenizer:
             )
             for tokenizer in tokenizers
         ]
+        self.fallback_tokenizer = (
+            self.tokenizers[0] if fallback_tokenizer is None else fallback_tokenizer
+        )
         self.language_prefix_token_ids = [
             tokenizer.language_prefix_token[1] for tokenizer in self.tokenizers
         ]
@@ -43,8 +48,18 @@ class MultiTokenizer:
             if not self.split_text
             else self.language_detector.split_n_detect(text, self.sep)
         )
+        last_end_index = 0
         for detection in language_detections:
+            # If there is text between the last detected language and the current one
+            if detection.start_index != last_end_index:
+                pre_tokenized_text.append(
+                    (
+                        text[last_end_index : detection.start_index],
+                        (last_end_index, detection.start_index),
+                    )
+                )
             detected_text = text[detection.start_index : detection.end_index]
+            last_end_index = detection.end_index
             tokenizer = self.get_tokenizer_by_language(detection.language)
             output: list[tuple[str, tuple[int, int]]] = (
                 tokenizer.tokenizer.pre_tokenizer.pre_tokenize_str(detected_text)
@@ -71,6 +86,11 @@ class MultiTokenizer:
                 for token, (start, end) in output
             ]
             pre_tokenized_text.extend(output)
+        # If there is text after the last detected language
+        if last_end_index < len(text):
+            pre_tokenized_text.append(
+                (text[last_end_index:], (last_end_index, len(text)))
+            )
         return pre_tokenized_text
 
     def get_tokenizer_by_language(
@@ -105,7 +125,14 @@ class MultiTokenizer:
             if not self.split_text
             else self.language_detector.split_n_detect(text, self.sep)
         )
+        last_end_index = 0
         for detection in language_detections:
+            if detection.start_index != last_end_index:
+                encoding = self.fallback_tokenizer.encode(
+                    text[last_end_index : detection.start_index]
+                )
+                ids.extend(encoding.ids)
+                tokens.extend(encoding.tokens)
             detected_text = text[detection.start_index : detection.end_index]
             tokenizer = self.get_tokenizer_by_language(detection.language)
             detected_text = (
@@ -114,6 +141,11 @@ class MultiTokenizer:
                 + tokenizer.language_suffix_token[0]
             )
             encoding = tokenizer.tokenizer.encode(detected_text)
+            ids.extend(encoding.ids)
+            tokens.extend(encoding.tokens)
+            last_end_index = detection.end_index
+        if last_end_index < len(text):
+            encoding = self.fallback_tokenizer.encode(text[last_end_index:])
             ids.extend(encoding.ids)
             tokens.extend(encoding.tokens)
         return ids, tokens
@@ -131,7 +163,15 @@ class MultiTokenizer:
                     j += 1
                 decoded_str.append(cur_tokenizer.decode(token_ids[i : j + 1]))
                 i = j + 1
-        return " ".join(decoded_str)
+            else:
+                while (
+                    j < len(token_ids)
+                    and token_ids[j] not in self.language_prefix_token_ids
+                ):
+                    j += 1
+                decoded_str.append(self.fallback_tokenizer.decode(token_ids[i:j]))
+                i = j
+        return "".join(decoded_str)
 
     def save(self, path: str) -> None:
         """Save Tokenizer."""
@@ -154,6 +194,4 @@ class MultiTokenizer:
     def get_vocab_size(self) -> int:
         """Get Vocabulary Size."""
         vocab = self.get_vocab()
-        return sum(
-            len(vocab[language]) for language in vocab
-        )  # TODO: This is probably wrong
+        return max(len(vocab[language]) for language in vocab)
