@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "multi-tokenizer"
-version = "0.1.2-dev"
-description = ""
+version = "0.1.3"
+description = "Python package that provides tokenization of multilingual texts using language-specific tokenizers"
 authors = ["chandralegend <irugalbandarachandra@gmail.com>"]
 license = "MIT"
 readme = "README.md"
