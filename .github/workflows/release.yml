@@ -16,12 +16,14 @@ jobs:
       - name: Install Poetry
         run: |
           pip install poetry
-      - name: Build and publish package
+      - name: Build package
+        run: poetry build
+      - name: Publish package
         run: |
           poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-          poetry build
           poetry publish
-      - run: pip install githubrelease
+        continue-on-error: true
+      - run: pip install githubrelease markdown-to-json
       - run: python scripts/gh_release.py
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
