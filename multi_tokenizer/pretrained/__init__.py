@@ -2,7 +2,7 @@
 
 import os
 from enum import Enum
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 from lingua import Language
 
@@ -19,8 +19,8 @@ class LanguageSpecificTokenizer:
         self,
         tokenizer_path: str,
         language: Language,
-        language_prefix: tuple[str, int],
-        language_suffix: tuple[str, int],
+        language_prefix: Tuple[str, int],
+        language_suffix: Tuple[str, int],
     ) -> None:
         """Initialize Language Specific Tokenizer."""
         self.language = language
@@ -33,19 +33,19 @@ class LanguageSpecificTokenizer:
         """Get Pre Tokenizer."""
         return self.tokenizer.pre_tokenizer
 
-    def encode(self, text: str) -> list[int]:
+    def encode(self, text: str) -> List[int]:
         """Get Encoder."""
         return self.tokenizer.encode(text).ids
 
-    def tokenize(self, text: str) -> list[str]:
+    def tokenize(self, text: str) -> List[str]:
         """Tokenize Text."""
         return self.tokenizer.encode(text).tokens
 
-    def decode(self, ids: list[int]) -> str:
+    def decode(self, ids: List[int]) -> str:
         """Decode Text."""
         return self.tokenizer.decode(ids)
 
-    def get_vocab(self) -> dict[str, int]:
+    def get_vocab(self) -> Dict[str, int]:
         """Get Vocab."""
         return self.tokenizer.get_vocab()
 

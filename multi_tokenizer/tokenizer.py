@@ -1,6 +1,7 @@
 """Multi Tokenizer Module."""
 
 import pickle
+from typing import Dict, List, Tuple, Union
 
 from lingua import Language
 
@@ -13,8 +14,8 @@ class MultiTokenizer:
 
     def __init__(
         self,
-        tokenizers: list[LanguageSpecificTokenizer | PretrainedTokenizers],
-        fallback_tokenizer: LanguageSpecificTokenizer | PretrainedTokenizers,
+        tokenizers: List[Union[LanguageSpecificTokenizer, PretrainedTokenizers]],
+        fallback_tokenizer: Union[LanguageSpecificTokenizer, PretrainedTokenizers],
         split_text: bool = False,
         sep: str = " ",
     ) -> None:
@@ -41,7 +42,7 @@ class MultiTokenizer:
         self.split_text = split_text
         self.sep = sep
 
-    def pre_tokenize(self, text: str) -> list[tuple[str, tuple[int, int]]]:
+    def pre_tokenize(self, text: str) -> List[Tuple[str, Tuple[int, int]]]:
         """Pre Tokenize Text."""
         pre_tokenized_text = []
         language_detections = (
@@ -62,7 +63,7 @@ class MultiTokenizer:
             detected_text = text[detection.start_index : detection.end_index]
             last_end_index = detection.end_index
             tokenizer = self.get_tokenizer_by_language(detection.language)
-            output: list[tuple[str, tuple[int, int]]] = (
+            output: List[Tuple[str, Tuple[int, int]]] = (
                 tokenizer.pre_tokenizer.pre_tokenize_str(detected_text)
             )
             output = (
@@ -117,7 +118,7 @@ class MultiTokenizer:
                 return tokenizer
         raise ValueError(f"Tokenizer for prefix ID {prefix_id} not found.")
 
-    def encode(self, text: str) -> list[int]:
+    def encode(self, text: str) -> List[int]:
         """Encode Text."""
         ids = []
         language_detections = (
@@ -147,7 +148,7 @@ class MultiTokenizer:
             ids.extend(token_ids)
         return ids
 
-    def tokenize(self, text: str) -> list[str]:
+    def tokenize(self, text: str) -> List[str]:
         """Tokenize Text."""
         tokens = []
         language_detections = (
@@ -176,7 +177,7 @@ class MultiTokenizer:
             tokens.extend(self.fallback_tokenizer.tokenize(text[last_end_index:]))
         return tokens
 
-    def decode(self, token_ids: list[int]) -> str:
+    def decode(self, token_ids: List[int]) -> str:
         """Decode Encoding."""
         decoded_str = []
         cur_tokenizer = None
@@ -210,7 +211,7 @@ class MultiTokenizer:
         with open(path, "rb") as file:
             return pickle.load(file)
 
-    def get_vocab(self) -> dict[str, dict[str, int]]:
+    def get_vocab(self) -> Dict[str, Dict[str, int]]:
         """Get Vocabulary."""
         vocab = {}
         for tokenizer in self.tokenizers:

@@ -1,27 +1,29 @@
 """Language Detection Module."""
 
+from typing import List
+
 from lingua import DetectionResult, Language, LanguageDetectorBuilder
 
 
 class LanguageDetector:
     """Language Detector."""
 
-    def __init__(self, languages: list[Language]) -> None:
+    def __init__(self, languages: List[Language]) -> None:
         """Initialize Language Detector."""
         self.languages = languages
         self.detector = LanguageDetectorBuilder.from_languages(*languages).build()
 
-    def detect(self, text: str) -> list[DetectionResult]:
+    def detect(self, text: str) -> List[DetectionResult]:
         """Detect Language."""
         results = self.detector.detect_multiple_languages_of(text)
         return results
 
-    def split_n_detect(self, text: str, sep: str = " ") -> list[DetectionResult]:
+    def split_n_detect(self, text: str, sep: str = " ") -> List[DetectionResult]:
         """Split Text and Detect Language."""
 
         def merge_results(
-            results: list[list[DetectionResult]],
-        ) -> list[DetectionResult]:
+            results: List[List[DetectionResult]],
+        ) -> List[DetectionResult]:
             """Merge Results. If consecutive words are detected as the same language, merge them."""
             merged_results: list[DetectionResult] = []
             for result in results:
@@ -60,7 +62,7 @@ class LanguageDetector:
         merged_results = merge_results(results)
         return merged_results
 
-    def batch_detect(self, texts: list[str]) -> list[list[DetectionResult]]:
+    def batch_detect(self, texts: List[str]) -> List[List[DetectionResult]]:
         """Detect Language in Batch."""
         results = self.detector.detect_multiple_languages_in_parallel_of(texts)
         return results
